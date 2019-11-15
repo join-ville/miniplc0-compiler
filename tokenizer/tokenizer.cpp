@@ -86,14 +86,26 @@ namespace miniplc0 {
 						current_state = DFAState::EQUAL_SIGN_STATE;
 						break;
 					case '-':
-						// 请填空：切换到减号的状态
+						current_state = DFAState::MINUS_SIGN_STATE;
+						break;
 					case '+':
-						// 请填空：切换到加号的状态
+						current_state = DFAState::PLUS_SIGN_STATE;
+						break;
 					case '*':
-						// 请填空：切换状态
+						current_state = DFAState::MULTIPLICATION_SIGN_STATE;
+						break;
 					case '/':
-						// 请填空：切换状态
-
+						current_state = DFAState::DIVISION_SIGN_STATE;
+						break;
+					case '(':
+						current_state = DFAState::LEFTBRACKET_STATE;
+						break;
+					case ')':
+						current_state = DFAState::RIGHTBRACKET_STATE;
+						break;
+					case ';':
+						current_state = DFAState::SEMICOLON_STATE;
+						break;
 					///// 请填空：
 					///// 对于其他的可接受字符
 					///// 切换到对应的状态
@@ -129,6 +141,8 @@ namespace miniplc0 {
 				// 如果读到的是字母，则存储读到的字符，并切换状态到标识符
 				// 如果读到的字符不是上述情况之一，则回退读到的字符，并解析已经读到的字符串为整数
 				//     解析成功则返回无符号整数类型的token，否则返回编译错误
+				if(!current_char.has_value)
+					return std::make_pair(std::make_optional<Token>(TokenType::UNSIGNED_INTEGER, ss, pos, currentPos()), std::optional<CompilationError>());
 				break;
 			}
 			case IDENTIFIER_STATE: {
@@ -141,7 +155,7 @@ namespace miniplc0 {
 				break;
 			}
 
-								   // 如果当前状态是加号
+								  // 如果当前状态是加号
 			case PLUS_SIGN_STATE: {
 				// 请思考这里为什么要回退，在其他地方会不会需要
 				unreadLast(); // Yes, we unread last char even if it's an EOF.
@@ -150,7 +164,40 @@ namespace miniplc0 {
 								  // 当前状态为减号的状态
 			case MINUS_SIGN_STATE: {
 				// 请填空：回退，并返回减号token
+				unreadLast(); 
+				return std::make_pair(std::make_optional<Token>(TokenType::MINUS_SIGN, '-', pos, currentPos()), std::optional<CompilationError>());
 			}
+								   // 当前状态为乘号的状态
+			case MULTIPLICATION_SIGN_STATE: {
+				unreadLast();
+				return std::make_pair(std::make_optional<Token>(TokenType::MULTIPLICATION_SIGN, '*', pos, currentPos()), std::optional<CompilationError>());
+			}
+									// 当前状态为除号的状态
+			case DIVISION_SIGN_STATE: {
+				unreadLast();
+				return std::make_pair(std::make_optional<Token>(TokenType::DIVISION_SIGN, '/', pos, currentPos()), std::optional<CompilationError>());
+			}
+									// 当前状态为左括号的状态
+			case LEFTBRACKET_STATE: {
+				unreadLast();
+				return std::make_pair(std::make_optional<Token>(TokenType::LEFT_BRACKET, '(', pos, currentPos()), std::optional<CompilationError>());
+			}
+									// 当前状态为右括号的状态
+			case RIGHTBRACKET_STATE: {
+				unreadLast();
+				return std::make_pair(std::make_optional<Token>(TokenType::RIGHT_BRACKET, ')', pos, currentPos()), std::optional<CompilationError>());
+			}
+									// 当前状态为分号的状态
+			case SEMICOLON_STATE: {
+				unreadLast();
+				return std::make_pair(std::make_optional<Token>(TokenType::SEMICOLON, ';', pos, currentPos()), std::optional<CompilationError>());
+			}
+									// 当前状态为等号的状态
+			case EQUAL_SIGN_STATE: {
+				unreadLast();
+				return std::make_pair(std::make_optional<Token>(TokenType::EQUAL_SIGN, '=', pos, currentPos()), std::optional<CompilationError>());
+			}
+			
 
 								   // 请填空：
 								   // 对于其他的合法状态，进行合适的操作
