@@ -170,12 +170,12 @@ namespace miniplc0 {
 						if (!isdigit(s[i]))
 							break;
 					}
-					if (i == s.length() - 1)
+					if (i == s.length())
 						return std::make_pair(std::make_optional<Token>(TokenType::UNSIGNED_INTEGER, s, pos, currentPos()), std::optional<CompilationError>());
 					else
 						return std::make_pair(std::optional<Token>(), std::make_optional<CompilationError>(pos, ErrorCode::ErrInvalidIdentifier));
 				}
-				
+				break;
 			}
 			case IDENTIFIER_STATE: {
 				// 请填空：
@@ -186,44 +186,49 @@ namespace miniplc0 {
 				//     如果解析结果是关键字，那么返回对应关键字的token，否则返回标识符的token
 				if (!current_char.has_value()) {
 					std::string s = ss.str();
-					if(isdigit(s[0]))
+					if (isdigit(s[0]))
 						return std::make_pair(std::optional<Token>(), std::make_optional<CompilationError>(pos, ErrorCode::ErrInvalidIdentifier));
-					else if (s._Equal("BEGIN"))
-						return std::make_pair(std::make_optional<Token>(TokenType::BEGIN, "BEGIN" , pos, currentPos()), std::optional<CompilationError>());
-					else if (s._Equal("END"))
-						return std::make_pair(std::make_optional<Token>(TokenType::END, "END", pos, currentPos()), std::optional<CompilationError>());
-					else if (s._Equal("VAR"))
-						return std::make_pair(std::make_optional<Token>(TokenType::VAR, "VAR", pos, currentPos()), std::optional<CompilationError>());
-					else if (s._Equal("CONST"))
-						return std::make_pair(std::make_optional<Token>(TokenType::CONST, "CONST", pos, currentPos()), std::optional<CompilationError>());
-					else if (s._Equal("PRINT"))
-						return std::make_pair(std::make_optional<Token>(TokenType::PRINT, "PRINT", pos, currentPos()), std::optional<CompilationError>());
-					else 
+					else if (s == "begin")
+						return std::make_pair(std::make_optional<Token>(TokenType::BEGIN, s, pos, currentPos()), std::optional<CompilationError>());
+					else if (s == "end")
+						return std::make_pair(std::make_optional<Token>(TokenType::END, s, pos, currentPos()), std::optional<CompilationError>());
+					else if (s == "var")
+						return std::make_pair(std::make_optional<Token>(TokenType::VAR, s, pos, currentPos()), std::optional<CompilationError>());
+					else if (s == "const")
+						return std::make_pair(std::make_optional<Token>(TokenType::CONST, s, pos, currentPos()), std::optional<CompilationError>());
+					else if (s == "print")
+						return std::make_pair(std::make_optional<Token>(TokenType::PRINT, s, pos, currentPos()), std::optional<CompilationError>());
+					else
 						return std::make_pair(std::make_optional<Token>(TokenType::IDENTIFIER, s, pos, currentPos()), std::optional<CompilationError>());
 				}
-
+				
 				// 获取读到的字符的值，注意auto推导出的类型是char
 				auto ch = current_char.value();
-				if (miniplc0::isdigit(ch) || miniplc0::isalpha(ch)) // 读到的字符是数字或字母
+				//std::cout << ch << '\n';
+				//std::cout << ss.str() << '\n';
+				if (miniplc0::isdigit(ch) || miniplc0::isalpha(ch)){ // 读到的字符是数字或字母
 					ss << ch;
+					break;
+				}
 				else {
 					unreadLast();
 					std::string s = ss.str();
 					if (isdigit(s[0]))
 						return std::make_pair(std::optional<Token>(), std::make_optional<CompilationError>(pos, ErrorCode::ErrInvalidIdentifier));
-					else if (s._Equal("BEGIN"))
-						return std::make_pair(std::make_optional<Token>(TokenType::BEGIN, "BEGIN", pos, currentPos()), std::optional<CompilationError>());
-					else if (s._Equal("END"))
-						return std::make_pair(std::make_optional<Token>(TokenType::END, "END", pos, currentPos()), std::optional<CompilationError>());
-					else if (s._Equal("VAR"))
-						return std::make_pair(std::make_optional<Token>(TokenType::VAR, "VAR", pos, currentPos()), std::optional<CompilationError>());
-					else if (s._Equal("CONST"))
-						return std::make_pair(std::make_optional<Token>(TokenType::CONST, "CONST", pos, currentPos()), std::optional<CompilationError>());
-					else if (s._Equal("PRINT"))
-						return std::make_pair(std::make_optional<Token>(TokenType::PRINT, "PRINT", pos, currentPos()), std::optional<CompilationError>());
+					else if (s == "begin")
+						return std::make_pair(std::make_optional<Token>(TokenType::BEGIN, s, pos, currentPos()), std::optional<CompilationError>());
+					else if (s == "end")
+						return std::make_pair(std::make_optional<Token>(TokenType::END, s, pos, currentPos()), std::optional<CompilationError>());
+					else if (s == "var")
+						return std::make_pair(std::make_optional<Token>(TokenType::VAR, s, pos, currentPos()), std::optional<CompilationError>());
+					else if (s == "const")
+						return std::make_pair(std::make_optional<Token>(TokenType::CONST, s, pos, currentPos()), std::optional<CompilationError>());
+					else if (s == "print")
+						return std::make_pair(std::make_optional<Token>(TokenType::PRINT, s, pos, currentPos()), std::optional<CompilationError>());
 					else
 						return std::make_pair(std::make_optional<Token>(TokenType::IDENTIFIER, s, pos, currentPos()), std::optional<CompilationError>());
 				}
+				
 			}
 
 								  // 如果当前状态是加号
