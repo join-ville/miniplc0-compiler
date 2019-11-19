@@ -148,8 +148,16 @@ namespace miniplc0 {
 						if (!isdigit(s[i]))
 							break;
 					}
-					if(i == s.length()-1)
-						return std::make_pair(std::make_optional<Token>(TokenType::UNSIGNED_INTEGER, s , pos, currentPos()), std::optional<CompilationError>());
+					double x;
+					std::stringstream temp;
+					temp << s;
+					temp >> x;
+					if (i == s.length()) {
+						if(x > 0x7fffffff)
+							return std::make_pair(std::optional<Token>(), std::make_optional<CompilationError>(pos, ErrorCode::ErrIntegerOverflow));
+						else
+							return std::make_pair(std::make_optional<Token>(TokenType::UNSIGNED_INTEGER, s , pos, currentPos()), std::optional<CompilationError>());
+					}	
 					else 
 						return std::make_pair(std::optional<Token>(), std::make_optional<CompilationError>(pos, ErrorCode::ErrInvalidIdentifier));
 				}
@@ -170,8 +178,16 @@ namespace miniplc0 {
 						if (!isdigit(s[i]))
 							break;
 					}
-					if (i == s.length())
-						return std::make_pair(std::make_optional<Token>(TokenType::UNSIGNED_INTEGER, s, pos, currentPos()), std::optional<CompilationError>());
+					double x;
+					std::stringstream temp;
+					temp << s;
+					temp >> x;
+					if (i == s.length()) {
+						if (x > 0x7fffffff)
+							return std::make_pair(std::optional<Token>(), std::make_optional<CompilationError>(pos, ErrorCode::ErrIntegerOverflow));
+						else
+							return std::make_pair(std::make_optional<Token>(TokenType::UNSIGNED_INTEGER, s, pos, currentPos()), std::optional<CompilationError>());
+					}
 					else
 						return std::make_pair(std::optional<Token>(), std::make_optional<CompilationError>(pos, ErrorCode::ErrInvalidIdentifier));
 				}
