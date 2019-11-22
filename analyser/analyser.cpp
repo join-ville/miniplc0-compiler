@@ -38,10 +38,17 @@ namespace miniplc0 {
 		// 完全可以参照 <程序> 编写
 
 		// <常量声明>
-
+		auto err = analyseConstantDeclaration();
+		if (err.has_value())
+			return err;
 		// <变量声明>
-
+		err = analyseVariableDeclaration();
+		if (err.has_value())
+			return err;
 		// <语句序列>
+		err = analyseStatementSequence();
+		if (err.has_value())
+			return err;
 		return {};
 	}
 
@@ -96,20 +103,44 @@ namespace miniplc0 {
 	// 需要补全
 	std::optional<CompilationError> Analyser::analyseVariableDeclaration() {
 		// 变量声明语句可能有一个或者多个
+		while (true) {
+			// 预读一个 token，不然不知道是否应该用 <变量声明> 推导
+			auto next = nextToken();
+			if (!next.has_value())
+				return {};
+			// 如果是 var 那么说明应该推导 <变量声明> 否则直接返回
+			if (next.value().GetType() != TokenType::VAR) {
+				unreadToken();
+				return {};
+			}
 
-		// 预读？
-
-		// 'var'
-
-		// <标识符>
-
-		// 变量可能没有初始化，仍然需要一次预读
-
-		// '='
-
-		// '<表达式>'
-
-		// ';'
+			// <标识符>
+			next = nextToken();
+			if (!next.has_value() || next.value().GetType() != TokenType::IDENTIFIER)
+				return std::make_optional<CompilationError>(_current_pos, ErrorCode::ErrNeedIdentifier);
+			if (isDeclared(next.value().GetValueString()))
+				return std::make_optional<CompilationError>(_current_pos, ErrorCode::ErrDuplicateDeclaration);
+			
+			//预读 '=' 
+			auto temp = nextToken();
+			if (temp.has_value() && temp.value().GetType() == TokenType::EQUAL_SIGN){
+				addVariable(next.value());
+				//表达式
+				auto err = analyseExpression();
+				if (err.has_value())
+					return err;
+			}
+			else {
+				addUninitializedVariable(next.value());
+				unreadToken();
+			}
+			
+			// ';'
+			next = nextToken();
+			if (!next.has_value() || next.value().GetType() != TokenType::SEMICOLON)
+				return std::make_optional<CompilationError>(_current_pos, ErrorCode::ErrNoSemicolon);
+		}
+		
 		return {};
 	}
 
@@ -135,6 +166,19 @@ namespace miniplc0 {
 			switch (next.value().GetType()) {
 				// 这里需要你针对不同的预读结果来调用不同的子程序
 				// 注意我们没有针对空语句单独声明一个函数，因此可以直接在这里返回
+			case IDENTIFIER: {
+				err = analyseAssignmentStatement();
+				if (err.has_value())
+					return err;
+			}
+			case PRINT: {
+				err = analyseOutputStatement();
+				if (err.has_value())
+					return err;
+			}
+			case SEMICOLON: {
+				next = nextToken();
+			}
 			default:
 				break;
 			}
@@ -150,6 +194,9 @@ namespace miniplc0 {
 		// 注意以下均为常表达式
 		// +1 -1 1
 		// 同时要注意是否溢出
+		auto next = nextToken();
+		if (!next.has_value())
+			return {};
 		return {};
 	}
 
