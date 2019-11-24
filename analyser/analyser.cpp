@@ -1,7 +1,7 @@
 #include "analyser.h"
 
 #include <climits>
-
+#include <sstream>
 namespace miniplc0 {
 	std::pair<std::vector<Instruction>, std::optional<CompilationError>> Analyser::Analyse() {
 		auto err = analyseProgram();
@@ -206,7 +206,9 @@ namespace miniplc0 {
 		next = nextToken();
 		if(!next.has_value() || next.value().GetType() != TokenType::UNSIGNED_INTEGER)
 			return std::make_optional<CompilationError>(_current_pos, ErrorCode::ErrIncompleteExpression);
-		//out = std::any_cast<int>(next.value().GetValue());
+		std::stringstream ss;
+		ss << std::any_cast<std::string>(next.value().GetValue());
+		ss >> out;
 		return {};
 	}
 
