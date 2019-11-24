@@ -154,6 +154,7 @@ namespace miniplc0 {
 		while (true) {
 			// 预读
 			auto next = nextToken();
+			
 			if (!next.has_value())
 				return {};
 			unreadToken();
@@ -170,14 +171,17 @@ namespace miniplc0 {
 				err = analyseAssignmentStatement();
 				if (err.has_value())
 					return err;
+				break;
 			}
 			case PRINT: {
 				err = analyseOutputStatement();
 				if (err.has_value())
 					return err;
+				break;
 			}
 			case SEMICOLON: {
 				next = nextToken();
+				break;
 			}
 			default:
 				break;
@@ -199,7 +203,10 @@ namespace miniplc0 {
 		if (type != TokenType::PLUS_SIGN && type != TokenType::MINUS_SIGN) {
 			unreadToken();
 		}
-		
+		next = nextToken();
+		if(!next.has_value() || next.value().GetType() != TokenType::UNSIGNED_INTEGER)
+			return std::make_optional<CompilationError>(_current_pos, ErrorCode::ErrIncompleteExpression);
+		//out = std::any_cast<int>(next.value().GetValue());
 		return {};
 	}
 
@@ -359,9 +366,10 @@ namespace miniplc0 {
 				return std::make_optional<CompilationError>(_current_pos, ErrorCode::ErrNotDeclared);
 			if(isUninitializedVariable(next.value().GetValueString()))
 				return std::make_optional<CompilationError>(_current_pos, ErrorCode::ErrNotInitialized);
+			break;
 		}
 		case UNSIGNED_INTEGER: {
-			
+			break;
 		}
 		case LEFT_BRACKET: {
 			// <表达式>
@@ -372,6 +380,7 @@ namespace miniplc0 {
 			next = nextToken();
 			if (!next.has_value() || next.value().GetType() != TokenType::RIGHT_BRACKET)
 				return std::make_optional<CompilationError>(_current_pos, ErrorCode::ErrIncompleteExpression);
+			break;
 		}
 		default:
 			return std::make_optional<CompilationError>(_current_pos, ErrorCode::ErrIncompleteExpression);
