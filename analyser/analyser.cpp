@@ -199,6 +199,8 @@ namespace miniplc0 {
 		// +1 -1 1
 		// 同时要注意是否溢出
 		auto next = nextToken();
+		if (!next.has_value())
+			return std::make_optional<CompilationError>(_current_pos, ErrorCode::ErrIncompleteExpression);;
 		auto type = next.value().GetType();
 		if (type != TokenType::PLUS_SIGN && type != TokenType::MINUS_SIGN) {
 			unreadToken();
@@ -208,7 +210,12 @@ namespace miniplc0 {
 			return std::make_optional<CompilationError>(_current_pos, ErrorCode::ErrIncompleteExpression);
 		std::stringstream ss;
 		ss << std::any_cast<std::string>(next.value().GetValue());
-		ss >> out;
+		int32_t temp;
+		ss >> temp;
+		if (type == TokenType::MINUS_SIGN)
+			out = -temp;
+		else
+			out = temp;
 		return {};
 	}
 
@@ -260,13 +267,26 @@ namespace miniplc0 {
 		if(isConstant(next.value().GetValueString()))
 			return std::make_optional<CompilationError>(_current_pos, ErrorCode::ErrAssignToConstant);
 		// '='
-		next = nextToken();
-		if (!next.has_value() || next.value().GetType() != TokenType::EQUAL_SIGN)
+		auto temp = nextToken();
+		if (!temp.has_value() || temp.value().GetType() != TokenType::EQUAL_SIGN)
 			return std::make_optional<CompilationError>(_current_pos, ErrorCode::ErrConstantNeedValue);
 		//<表达式>
 		auto err = analyseExpression();
 		if (err.has_value())
 			return err;
+		// 未初始化变量加入已初始化变量map
+		if (isUninitializedVariable(next.value().GetValueString())) {
+			int32_t index  = getIndex(next.value().GetValueString());
+			_uninitialized_vars.erase(next.value().GetValueString());
+			_vars[next.value().GetValueString()] = index;
+			_instructions.emplace_back(Operation::STO, index);
+		}
+		// 已初始化变量重新赋值
+		else if (isInitializedVariable(next.value().GetValueString())) {
+			_vars.erase(next.value().GetValueString());
+			addVariable(next.value());
+			_instructions.emplace_back(Operation::STO, getIndex(next.value().GetValueString()));
+		}
 		// ';'
 		next = nextToken();
 		if (!next.has_value() || next.value().GetType() != TokenType::SEMICOLON)
@@ -368,9 +388,15 @@ namespace miniplc0 {
 				return std::make_optional<CompilationError>(_current_pos, ErrorCode::ErrNotDeclared);
 			if(isUninitializedVariable(next.value().GetValueString()))
 				return std::make_optional<CompilationError>(_current_pos, ErrorCode::ErrNotInitialized);
+			_instructions.emplace_back(Operation::LOD, getIndex(next.value().GetValueString()));
 			break;
 		}
 		case UNSIGNED_INTEGER: {
+			std::stringstream ss;
+			int32_t temp;
+			ss << next.value().GetValueString();
+			ss >> temp;
+			_instructions.emplace_back(Operation::LIT, temp);
 			break;
 		}
 		case LEFT_BRACKET: {
