@@ -131,6 +131,7 @@ namespace miniplc0 {
 					return err;
 			}
 			else {
+				_instructions.emplace_back(Operation::LIT, 0);
 				addUninitializedVariable(next.value());
 				unreadToken();
 			}
