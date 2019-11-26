@@ -129,6 +129,7 @@ namespace miniplc0 {
 				auto err = analyseExpression();
 				if (err.has_value())
 					return err;
+
 			}
 			else {
 				_instructions.emplace_back(Operation::LIT, 0);
@@ -284,8 +285,6 @@ namespace miniplc0 {
 		}
 		// 已初始化变量重新赋值
 		else if (isInitializedVariable(next.value().GetValueString())) {
-			_vars.erase(next.value().GetValueString());
-			addVariable(next.value());
 			_instructions.emplace_back(Operation::STO, getIndex(next.value().GetValueString()));
 		}
 		// ';'
