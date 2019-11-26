@@ -5,22 +5,26 @@
 #include <sstream>
 #include <vector>
 
-// 下面是示例如何书写测试用例
 TEST_CASE("Test hello world.") {
 	
 	std::string input =
-		//"begin\n"
-		"begin\n";
-		//"	var a = 1;\n"
-		//"	const b = 1\n"
-		//"	print(a+b);\n"
-		//"end\n";
+		"begin\n"
+		"var a;\n"
+		"end\n";
 	std::stringstream ss;
 	ss.str(input);
 	miniplc0::Tokenizer tkz(ss);
 	std::vector<miniplc0::Token> output = {};
-	std::string s = "begin";
-	output.emplace_back(std::make_optional<miniplc0::Token>(miniplc0::TokenType::BEGIN, s, std::make_pair(0,0), std::make_pair(0,5)).value());
+	std::string s1 = "begin";
+	std::string s2 = "var";
+	std::string s3 = "a";
+	std::string s4 = ";";
+	std::string s5 = "end";
+	output.emplace_back(std::make_optional<miniplc0::Token>(miniplc0::TokenType::BEGIN, s1, std::make_pair(0,0), std::make_pair(0,5)).value());
+	output.emplace_back(std::make_optional<miniplc0::Token>(miniplc0::TokenType::VAR, s2, std::make_pair(1,0), std::make_pair(1,3)).value());
+	output.emplace_back(std::make_optional<miniplc0::Token>(miniplc0::TokenType::IDENTIFIER, s3, std::make_pair(1, 4), std::make_pair(1,5)).value());
+	output.emplace_back(std::make_optional<miniplc0::Token>(miniplc0::TokenType::SEMICOLON, s4, std::make_pair(1, 5), std::make_pair(1,6)).value());
+	output.emplace_back(std::make_optional<miniplc0::Token>(miniplc0::TokenType::END, s5, std::make_pair(2, 0), std::make_pair(2,3)).value());
 	auto result = tkz.AllTokens();
 	if (result.second.has_value()) {
 		FAIL();
@@ -28,3 +32,18 @@ TEST_CASE("Test hello world.") {
 	REQUIRE( (result.first == output) );
 	
 }
+/*
+TEST_CASE("invalid") {
+
+	std::string input =
+		"!\n";
+	std::stringstream ss;
+	ss.str(input);
+	miniplc0::Tokenizer tkz(ss);
+	std::vector<miniplc0::CompilationError> output = {};
+	output.emplace_back( std::make_optional<miniplc0::CompilationError>(std::make_pair(0,0), miniplc0::ErrorCode::ErrInvalidInput));
+	auto result = tkz.AllTokens();
+	REQUIRE((result.second == output));
+
+}
+*/
